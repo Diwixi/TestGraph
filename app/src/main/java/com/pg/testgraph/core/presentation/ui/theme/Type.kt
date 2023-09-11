@@ -1,4 +1,4 @@
-package com.pg.testgraph.ui.theme
+package com.pg.testgraph.core.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

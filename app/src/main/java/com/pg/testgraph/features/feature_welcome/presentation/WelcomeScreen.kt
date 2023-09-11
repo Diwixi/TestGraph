@@ -36,7 +36,7 @@ import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.St
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State.Error
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State.Loading
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State.Nothing
-import com.pg.testgraph.ui.navigation.Screen
+import com.pg.testgraph.core.presentation.ui.navigation.Screen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
