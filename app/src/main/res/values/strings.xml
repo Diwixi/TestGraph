@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">TestGraph</string>
+    <string name="success_dialog_title">Success</string>
+    <string name="success_dialog_msg">Points saved successfully</string>
+    <string name="ok">ОК</string>
+    <string name="error_dialog_title">Error</string>
+    <string name="error_dialog_msg">Failed to save points</string>
+    <string name="welcome">Welcome!</string>
+    <string name="start">Start</string>
+    <string name="try_again">Try again</string>
+    <string name="something_went_wrong">Something went wrong. Shall we try again?</string>
+    <string name="hint_popints_error">The number of points should not exceed 1000</string>
+    <string name="hint_points">Number of points</string>
+    <string name="straight_line">Straight line</string>
+    <string name="smooth_line">Smooth line</string>
+    <string name="save_points_to_file">Save points to a file</string>
+    <string name="point_x">X: %1$s</string>
+    <string name="point_y">Y: %1$s</string>
+</resources>
