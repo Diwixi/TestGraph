@@ -1,5 +1,6 @@
 package com.pg.testgraph.features.feature_graph.presentation
 
+import android.graphics.Typeface
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import co.yml.charts.axis.AxisData
+import co.yml.charts.common.extensions.formatToSinglePrecision
 import co.yml.charts.ui.linechart.LineChart
 import co.yml.charts.ui.linechart.model.GridLines
 import co.yml.charts.ui.linechart.model.IntersectionPoint
@@ -54,10 +56,10 @@ import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
 import co.yml.charts.ui.linechart.model.ShadowUnderLine
 import com.pg.testgraph.R
 import com.pg.testgraph.core.domain.Point
+import com.pg.testgraph.core.presentation.ui.navigation.Screen
 import com.pg.testgraph.features.feature_graph.presentation.GraphContract.Effect
 import com.pg.testgraph.features.feature_graph.presentation.GraphContract.Event
 import com.pg.testgraph.features.feature_graph.presentation.GraphContract.State
-import com.pg.testgraph.ui.navigation.Screen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -224,6 +226,7 @@ fun PointsTable(points: List<Point>) {
 
 @Composable
 fun PointsLineChart(points: List<Point>, lineType: LineType = LineType.SmoothCurve()) {
+    val steps = points.size
     val chartPoints = points.map { point ->
         co.yml.charts.common.model.Point(
             x = point.x.toFloat(),
@@ -232,17 +235,26 @@ fun PointsLineChart(points: List<Point>, lineType: LineType = LineType.SmoothCur
     }
 
     val xAxisData = AxisData.Builder()
-        .axisStepSize(8.dp)
-        .backgroundColor(Color.Blue)
-        .steps(points.size - 1)
-        .labelData { i -> i.toString() }
-        .labelAndAxisLinePadding(8.dp)
+        .axisStepSize(30.dp)
+        .backgroundColor(Color.White)
+        .steps(steps)
+        .typeFace(Typeface.DEFAULT_BOLD)
+        .labelAndAxisLinePadding(20.dp)
         .build()
 
     val yAxisData = AxisData.Builder()
-        .steps(points.size)
-        .backgroundColor(Color.Red)
+        .axisStepSize(30.dp)
+        .backgroundColor(Color.White)
         .labelAndAxisLinePadding(8.dp)
+        .steps(steps)
+        .typeFace(Typeface.DEFAULT_BOLD)
+        .labelData { i ->
+            val yMin = chartPoints.minOf { it.y }
+            val yMax = chartPoints.maxOf { it.y }
+            val yScale = (yMax - yMin) / steps
+            ((i * yScale) + yMin).formatToSinglePrecision()
+        }
+        .labelAndAxisLinePadding(20.dp)
         .build()
 
     val lineChartData = LineChartData(

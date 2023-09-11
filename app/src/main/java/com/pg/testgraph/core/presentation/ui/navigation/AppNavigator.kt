@@ -1,4 +1,4 @@
-package com.pg.testgraph.ui.navigation
+package com.pg.testgraph.core.presentation.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost

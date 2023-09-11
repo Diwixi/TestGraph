@@ -1,4 +1,4 @@
-package com.pg.testgraph.ui.navigation
+package com.pg.testgraph.core.presentation.ui.navigation
 
 sealed class Screen(val route: String) {
     object MainScreen : Screen("main_screen")
