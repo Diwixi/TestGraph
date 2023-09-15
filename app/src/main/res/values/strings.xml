@@ -16,4 +16,6 @@
     <string name="save_points_to_file">Save points to a file</string>
     <string name="point_x">X: %1$s</string>
     <string name="point_y">Y: %1$s</string>
+    <string name="server_not_responding">Unfortunately, the server is no longer responding.\nCan I generate the points myself?</string>
+    <string name="generate_points">Generate points</string>
 </resources>
