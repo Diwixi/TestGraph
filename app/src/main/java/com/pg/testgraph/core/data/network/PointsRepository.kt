@@ -13,20 +13,15 @@ class PointsRepository(private val apiService: ApiService) {
         points = pointsListResponse.toPoints()
         points
     }
+
+    fun saveGeneratedPoints(points: List<Point>) {
+        this.points = points
+    }
 }
 
 inline fun <T> safeCall(action: () -> Result<T>): Result<T> {
     return try {
         action.invoke()
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
-}
-
-inline fun safeUnitCall(action: () -> Unit): Result<Unit> {
-    return try {
-        action.invoke()
-        Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
     }

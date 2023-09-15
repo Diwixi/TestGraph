@@ -19,8 +19,12 @@ class WelcomeContract {
 
     sealed class Event : IEvent {
         data class OnFetchPoints(val count: Int) : Event()
+        data class OnFetchOwnPoints(val count: Int) : Event()
         object RefreshNavigation : Event()
     }
 
-    data class ErrorModel(val message: String)
+    sealed class ErrorModel(val message: String) {
+        data class SocketTimeout(val count: Int) : ErrorModel("Waiting time exceeded")
+        object Unknown : ErrorModel("Unknown error")
+    }
 }

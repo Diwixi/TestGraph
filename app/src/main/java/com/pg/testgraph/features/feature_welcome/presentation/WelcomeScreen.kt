@@ -30,13 +30,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pg.testgraph.R
+import com.pg.testgraph.core.presentation.ui.navigation.Screen
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.Effect
+import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.ErrorModel
+import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.ErrorModel.SocketTimeout
+import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.ErrorModel.Unknown
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.Event
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State.Error
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State.Loading
 import com.pg.testgraph.features.feature_welcome.presentation.WelcomeContract.State.Nothing
-import com.pg.testgraph.core.presentation.ui.navigation.Screen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -58,9 +61,15 @@ fun WelcomeScreen(
 
     when (state) {
         is Loading -> LoadingContent()
-        is Error -> ErrorScreen {
-            setEvent(Event.RefreshNavigation)
-        }
+        is Error -> ErrorContent(
+            error = (state as Error).errorModel,
+            doOnTryAgain = {
+                setEvent(Event.RefreshNavigation)
+            },
+            doOnGenerate = {
+                setEvent(Event.OnFetchOwnPoints(it))
+            }
+        )
 
         is Nothing -> {
             WelcomeScreenContent { count ->
@@ -71,7 +80,50 @@ fun WelcomeScreen(
 }
 
 @Composable
-fun ErrorScreen(doAgainClick: () -> Unit) {
+fun ErrorContent(error: ErrorModel, doOnTryAgain: () -> Unit, doOnGenerate: (Int) -> Unit) {
+    when (error) {
+        is Unknown -> UnknownErrorScreen(doOnTryAgain)
+
+        is SocketTimeout -> {
+            SocketTimeoutErrorScreen(error.count, doOnTryAgain, doOnGenerate)
+        }
+    }
+}
+
+@Composable
+fun SocketTimeoutErrorScreen(count: Int, doOnTryAgain: () -> Unit, doOnGenerate: (Int) -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.wrapContentSize()
+        ) {
+            Text(text = stringResource(R.string.server_not_responding))
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = doOnTryAgain,
+                content = {
+                    Text(text = stringResource(R.string.try_again))
+                }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { doOnGenerate(count) },
+                content = {
+                    Text(text = stringResource(R.string.generate_points))
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun UnknownErrorScreen(doAgainClick: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
