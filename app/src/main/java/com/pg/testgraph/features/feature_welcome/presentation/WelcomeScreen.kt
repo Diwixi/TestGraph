@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import androidx.navigation.NavController
 import com.pg.testgraph.R
 import com.pg.testgraph.core.presentation.ui.navigation.Screen
@@ -61,15 +62,11 @@ fun WelcomeScreen(
 
     when (state) {
         is Loading -> LoadingContent()
-        is Error -> ErrorContent(
-            error = (state as Error).errorModel,
-            doOnTryAgain = {
-                setEvent(Event.RefreshNavigation)
-            },
-            doOnGenerate = {
-                setEvent(Event.OnFetchOwnPoints(it))
-            }
-        )
+        is Error -> ErrorContent(error = (state as Error).errorModel, doOnTryAgain = {
+            setEvent(Event.RefreshNavigation)
+        }, doOnGenerate = {
+            setEvent(Event.OnFetchOwnPoints(it))
+        })
 
         is Nothing -> {
             WelcomeScreenContent { count ->
@@ -95,8 +92,7 @@ fun SocketTimeoutErrorScreen(count: Int, doOnTryAgain: () -> Unit, doOnGenerate:
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp), contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -105,19 +101,13 @@ fun SocketTimeoutErrorScreen(count: Int, doOnTryAgain: () -> Unit, doOnGenerate:
         ) {
             Text(text = stringResource(R.string.server_not_responding))
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = doOnTryAgain,
-                content = {
-                    Text(text = stringResource(R.string.try_again))
-                }
-            )
+            Button(onClick = doOnTryAgain, content = {
+                Text(text = stringResource(R.string.try_again))
+            })
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { doOnGenerate(count) },
-                content = {
-                    Text(text = stringResource(R.string.generate_points))
-                }
-            )
+            Button(onClick = { doOnGenerate(count) }, content = {
+                Text(text = stringResource(R.string.generate_points))
+            })
         }
     }
 }
@@ -125,8 +115,7 @@ fun SocketTimeoutErrorScreen(count: Int, doOnTryAgain: () -> Unit, doOnGenerate:
 @Composable
 fun UnknownErrorScreen(doAgainClick: () -> Unit) {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -135,12 +124,9 @@ fun UnknownErrorScreen(doAgainClick: () -> Unit) {
         ) {
             Text(text = stringResource(R.string.something_went_wrong))
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = doAgainClick,
-                content = {
-                    Text(text = stringResource(R.string.try_again))
-                }
-            )
+            Button(onClick = doAgainClick, content = {
+                Text(text = stringResource(R.string.try_again))
+            })
         }
     }
 }
@@ -148,28 +134,62 @@ fun UnknownErrorScreen(doAgainClick: () -> Unit) {
 @Composable
 fun LoadingContent() {
     Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()
     ) {
         CircularProgressIndicator()
     }
+}
+
+fun String.isValidNegativeNumber(): Boolean {
+    return this == "-" || this.all { char -> char.isDigit() } || (this.startsWith("-") && this.drop(
+        1
+    ).all { char -> char.isDigit() })
+}
+
+fun String.isValidPositiveNumber(): Boolean {
+    return this.all { char -> char.isDigit() } && this.toInt() <= 1000 && this.toInt() > 0
 }
 
 @Composable
 fun WelcomeScreenContent(doOnRunButtonClick: (Int) -> Unit) {
 
     var pointCount by remember { mutableStateOf("") }
+    val isError by remember {
+        derivedStateOf {
+            pointCount.isNotEmpty() && (!pointCount.isValidNegativeNumber() || !pointCount.isValidPositiveNumber())
+        }
+    }
     val isActiveButton by remember {
         derivedStateOf {
-            pointCount.isNotEmpty() && pointCount.toInt() < 1000
+            pointCount.isNotEmpty() && pointCount.isDigitsOnly() && pointCount.toInt() <= 1000 && pointCount.toInt() > 0
         }
     }
     val labelText by remember {
         derivedStateOf {
-            if (pointCount.isNotEmpty() && pointCount.toInt() > 1000) {
-                R.string.hint_popints_error
-            } else {
-                R.string.hint_points
+            when {
+                pointCount.isEmpty() -> {
+                    R.string.hint_points
+                }
+
+                pointCount.length == 1 && pointCount.first() == '-' -> {
+                    R.string.hint_points
+                }
+
+                pointCount.toInt() >= 1001 -> {
+                    R.string.hint_popints_error
+                }
+
+                pointCount.toInt() == 0 -> {
+                    R.string.number_points_cannot_be_zero
+                }
+
+                pointCount.toInt() < 0 -> {
+                    R.string.number_points_cannot_be_negative
+                }
+
+                else -> {
+                    R.string.hint_points
+                }
             }
         }
     }
@@ -183,27 +203,27 @@ fun WelcomeScreenContent(doOnRunButtonClick: (Int) -> Unit) {
     ) {
         Text(text = stringResource(R.string.welcome))
 
-        OutlinedTextField(
-            value = pointCount,
-            isError = pointCount.isNotEmpty() && pointCount.toInt() > 1000,
-            onValueChange = { pointCount = it },
+        OutlinedTextField(value = pointCount,
+            isError = isError,
+            onValueChange = {
+                if (it.isDigit() && it.length <= 5) {
+                    pointCount = it
+                }
+            },
             label = { Text(stringResource(labelText)) },
             keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
             ),
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = { doOnRunButtonClick(pointCount.toInt()) },
+        Button(onClick = { doOnRunButtonClick(pointCount.toInt()) },
             enabled = isActiveButton,
             content = {
                 Text(text = stringResource(R.string.start))
-            }
-        )
+            })
     }
 }
 
@@ -211,4 +231,10 @@ private fun handleEffect(effect: Effect, navController: NavController) {
     when (effect) {
         is Effect.OpenGraphScreen -> navController.navigate(Screen.GraphScreen.route)
     }
+}
+
+private fun String.isDigit(): Boolean {
+    return this == "-" || this.all { char -> char.isDigit() } || (this.startsWith("-") && this.drop(
+        1
+    ).all { char -> char.isDigit() })
 }
