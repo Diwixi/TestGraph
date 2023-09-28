@@ -31,7 +31,7 @@ class WelcomeViewModel(private val repository: PointsRepository) :
             points.add(Point(x, y))
         }
 
-        repository.saveGeneratedPoints(points)
+        repository.rememberGeneratedPoints(points)
         sendEffect(Effect.OpenGraphScreen(points))
     }
 

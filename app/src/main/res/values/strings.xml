@@ -18,4 +18,7 @@
     <string name="point_y">Y: %1$s</string>
     <string name="server_not_responding">Unfortunately, the server is no longer responding.\nCan I generate the points myself?</string>
     <string name="generate_points">Generate points</string>
+    <string name="number_points_cannot_be_zero">The number of points cannot be zero</string>
+    <string name="number_points_cannot_be_negative">The number of points cannot be negative</string>
+    <string name="please_enter_numbers">Please enter the numbers</string>
 </resources>

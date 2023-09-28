@@ -1,21 +1,38 @@
 package com.pg.testgraph.core.data.network
 
+import android.content.Context
 import com.pg.testgraph.core.domain.Point
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.io.File
 
-class PointsRepository(private val apiService: ApiService) {
+class PointsRepository(
+    private val apiService: ApiService,
+    private val dispatcher: CoroutineDispatcher
+) {
     var points: List<Point> = emptyList()
 
-    suspend fun fetchPoints(count: Int): Result<List<Point>> = withContext(Dispatchers.IO) {
+    suspend fun fetchPoints(count: Int): Result<List<Point>> = withContext(dispatcher) {
         safeCall { Result.success(apiService.getPoints(count)) }
     }.mapCatching { pointsListResponse ->
-        points = pointsListResponse.toPoints()
+        points = pointsListResponse.toPoints().sortedBy { it.x }
         points
     }
 
-    fun saveGeneratedPoints(points: List<Point>) {
-        this.points = points
+    fun rememberGeneratedPoints(points: List<Point>) {
+        this.points = points.sortedBy { it.x }
+    }
+
+    fun savePointsToFile(context: Context, resultAction: (SaveFileResult) -> Unit) {
+        try {
+            val file = File(context.filesDir, "points.txt")
+            file.printWriter().use { out ->
+                points.forEach { out.println("${it.x}, ${it.y}") }
+            }
+            resultAction(SaveFileResult.Success)
+        } catch (e: Exception) {
+            resultAction(SaveFileResult.Failure)
+        }
     }
 }
 
